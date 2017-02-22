@@ -1,0 +1,141 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+//---------------------------------Inicio de la pila-------------------------------
+
+type Node struct {
+	Value string
+}
+
+func (n *Node) String() string {
+	return fmt.Sprint(n.Value)
+}
+
+// NewStack returns a new stack.
+func NewStack() *Stack {
+	return &Stack{}
+}
+
+// Stack is a basic LIFO stack that resizes as needed.
+type Stack struct {
+	nodes []*Node
+	count int
+}
+
+// Push adds a node to the stack.
+func (s *Stack) Push(n *Node) {
+	s.nodes = append(s.nodes[:s.count], n)
+	s.count++
+}
+
+// Pop removes and returns a node from the stack in last to first order.
+func (s *Stack) Pop() *Node {
+	if s.count == 0 {
+		return nil
+	}
+	s.count--
+	return s.nodes[s.count]
+}
+
+func (s *Stack) isEmpty() bool  {
+	if(s.count == 0){
+		return true
+	}else{
+		return false
+	}
+}
+
+//---------------------------------Fin de la pila----------------------
+
+
+//----------------------Codigos raros------------------
+func remove(slice []string, s int) []string {
+    return append(slice[:s], slice[s+1:]...)
+}
+
+func extraerCaracter(cadena string) string {
+	return string(cadena[0])
+}
+
+func cortarCadena(caracteres int, cadena string) string {
+	var respuesta string
+	for i := caracteres; i < len(cadena); i++ {
+		respuesta = respuesta + string(cadena[i])
+	}
+	return respuesta
+}
+
+func cadenaASlice(cadena string) []string {
+	salida := make([]string, 0)
+	result := strings.Split(cadena, " ")
+	for i := 0; i < len(result); i++ {
+		salida = append(salida, result[i])
+	}
+	return salida
+}
+
+//Verdadero si op1 es de mayor o igual precedencia que op2
+func evaluarPrecedencia(op1 string, op2 string) bool{
+	if(op1 == "*" || op1 == "/" || op1 == op2){
+		return true
+	}else if( ((op1=="+" || op1 == "-") || (op1==op2)) && (op2 != "*" && op2 != "/")){
+		return true
+	}else{
+		return false
+	}
+}
+
+//------------------Fin de codigos raros---------------
+
+func inordenAPostorden(entrada []string) []string {
+	fmt.Println("Conversion Inorden a Postorden")
+	pila := NewStack()
+	salida := make([]string, 0)
+	for (len(entrada)>0){
+		E := entrada[0]
+		if (E == "+" || E=="-" || E=="*" || E=="/"){
+			for(!pila.isEmpty() && evaluarPrecedencia(pila.nodes[pila.count-1].Value,E)){
+				Valor := pila.Pop()
+				salida = append(salida, Valor.Value)
+			}
+			pila.Push(&Node{E})
+		} else if(E == "("){
+			pila.Push(&Node{E})
+		} else if(E == ")"){	
+			for(!pila.isEmpty() && pila.nodes[pila.count-1].Value != "("){
+				Valor := pila.Pop()
+				salida = append(salida, Valor.Value)
+			}
+			if(pila.nodes[pila.count-1].Value == "("){
+				pila.Pop()
+			}else{
+				fmt.Println("Error 2")
+			}
+		} else{			
+			salida = append(salida, E)
+		}
+		entrada = remove(entrada,0)
+	}
+	for (!pila.isEmpty()){
+		Valor := pila.Pop()
+		salida = append(salida, Valor.Value)
+	}
+	return salida
+}
+
+func main() {
+	//fmt.Println(evaluarPrecedencia("+","/"))
+	var infijo string
+	//infijo = "-4 * ( -5 - 2 ) / ( -1 * -53 - -3 )"
+	//infijo = "( 3 - 2 ) + 5"
+	infijo = "-4 * ( -5 - 2 ) / ( -1 * x - -3 ) = -1 / -2"
+	fmt.Println(infijo)
+	entrada := cadenaASlice(infijo)	
+	posfijo := inordenAPostorden(entrada)	
+	fmt.Println("Posfijo: ",posfijo)
+	//fmt.Println("Resultado: " + posfijo)
+}
